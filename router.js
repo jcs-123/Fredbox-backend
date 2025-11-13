@@ -1,0 +1,56 @@
+// router.js
+const express = require('express');
+const router = express.Router();
+
+const usercontroller = require('./CONTROLLER/usercontroller');
+const otpcontroller = require('./CONTROLLER/forgotPasswordController');
+const messcutcontroller = require('./CONTROLLER/messcutController');
+const complaintController  = require('./CONTROLLER/complaintController');
+const apologycontroller  = require('./CONTROLLER/apologyController');
+const holidayController = require("./CONTROLLER/holidayController");
+const messcutreport = require("./CONTROLLER/messcutreport");
+
+
+// login
+router.post("/register", usercontroller.addUser);
+router.post("/login", usercontroller.loginUser);
+router.get("/user", usercontroller.getUserByAdmission);
+router.put('/update-password', usercontroller.updatePassword);
+router.post("/send-otp", otpcontroller.sendOtp);
+router.post("/verify-otp", otpcontroller.verifyOtp);
+router.post("/reset-password", otpcontroller.resetPassword);
+// for apology
+router.get("/rooms", usercontroller.getAllRooms);
+router.get("/studentsByRoom", usercontroller.getStudentsByRoom);
+
+
+// messcutform
+router.post("/adddetail", messcutcontroller.createMesscutRequest);                // student submit
+router.get("/student", messcutcontroller.getMesscutRequestsByStudent);   // get own requests
+router.get("/all",messcutcontroller. getAllMesscutRequests);             // admin view all
+router.put("/status/:id", messcutcontroller.updateMesscutStatus); 
+
+// complainnt form
+router.post("/add", complaintController.createComplaint); // Student submits complaint
+router.get("/api/complaints/student", complaintController.getComplaintsByStudent); // Student view own
+router.get("/allcomplaint/all", complaintController.getAllComplaints); // Admin view all
+router.put("/api/complaint/update/:id", complaintController.updateComplaint); // Admin updates
+
+
+// apologyrequest
+router.post("/apology/add", apologycontroller.addApologyRequest);
+router.get("/api/apology/all", apologycontroller.getAllApologyRequests);
+router.get("/by-student",apologycontroller. getApologyByStudent);
+router.put("/api/apology/update/:id", apologycontroller.updateApologyStatus);
+// Holiday select
+router.post("/api/holiday/add", holidayController.addHoliday);
+router.get("/api/holiday/all", holidayController.getAllHolidays);
+router.delete("/api/holiday/delete/:id", holidayController.deleteHoliday);
+router.put("/api/holiday/update/:id", holidayController.updateHoliday);
+// messcutreport
+
+router.get("/api/messcut/report", messcutreport.getMesscutReport);
+router.get("/api/messcut/student", messcutreport.getMesscutDetailsByStudent)
+
+module.exports = router;
+

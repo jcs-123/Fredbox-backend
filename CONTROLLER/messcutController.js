@@ -1,0 +1,189 @@
+const Messcut = require('../MODEL/Messcut');
+
+/* 🟢 Create a new request */
+
+const dayjs = require("dayjs");
+
+/* ======================================================
+   🕐 Normalize Time (handles text ranges)
+====================================================== */
+function normalizeTime(timeStr) {
+  if (!timeStr) return "00:00";
+  const str = timeStr.toLowerCase();
+
+  if (str.includes("morning")) return "07:00"; // midpoint of 6–8 AM
+  if (str.includes("evening")) return "17:00"; // midpoint of 4–6 PM
+  if (str.includes("afternoon")) return "13:30"; // midpoint of 1–3 PM
+  if (str.includes("night")) return "20:00"; // midpoint of 8–10 PM
+
+  const match = str.match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    const [_, h, m] = match;
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+  }
+
+  return "00:00";
+}
+
+/* ======================================================
+   🧮 Local Time Period Calculation (IST-safe)
+====================================================== */
+function calculatePeriod(leavingDate, leavingTime, returningDate, returningTime) {
+  try {
+    if (!leavingDate || !leavingTime || !returningDate || !returningTime) return "-";
+
+    const leaveT = normalizeTime(leavingTime);
+    const returnT = normalizeTime(returningTime);
+
+    // ✅ Parse as local time (not UTC)
+    const start = dayjs(`${leavingDate} ${leaveT}`, "YYYY-MM-DD HH:mm");
+    const end = dayjs(`${returningDate} ${returnT}`, "YYYY-MM-DD HH:mm");
+
+    if (!start.isValid() || !end.isValid() || end.isBefore(start)) return "-";
+
+    const diffMs = end.diff(start);
+    const totalHours = diffMs / (1000 * 60 * 60);
+    const days = Math.floor(totalHours / 24);
+    const hours = Math.floor(totalHours % 24);
+    const minutes = Math.round((totalHours * 60) % 60);
+
+    if (days === 0 && hours === 0) return `${minutes} minute(s)`;
+    if (days === 0) return `${hours} hour(s) ${minutes ? `${minutes} min(s)` : ""}`.trim();
+    return `${days} day(s) ${hours} hour(s)${minutes ? ` ${minutes} min(s)` : ""}`;
+  } catch (error) {
+    console.error("⛔ Error calculating period:", error);
+    return "-";
+  }
+}
+
+/* ======================================================
+   🟢 Controller: Create New Messcut Request
+====================================================== */
+exports.createMesscutRequest = async (req, res) => {
+  try {
+    const {
+      name,
+      admissionNo,
+      roomNo,
+      leavingDate,
+      leavingTime,
+      returningDate,
+      returningTime,
+      reason,
+    } = req.body;
+
+    if (!admissionNo || !leavingDate || !reason) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields." });
+    }
+
+    // 🔹 Auto-calculate period
+    const period = calculatePeriod(leavingDate, leavingTime, returningDate, returningTime);
+
+    const newReq = new Messcut({
+      name,
+      admissionNo,
+      roomNo,
+      leavingDate,
+      leavingTime,
+      returningDate,
+      returningTime,
+      reason,
+      period, // ✅ store readable duration
+    });
+
+    await newReq.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Request submitted successfully ✅",
+      data: newReq,
+    });
+  } catch (err) {
+    console.error("❌ Create Messcut Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while submitting request.",
+      error: err.message,
+    });
+  }
+};
+
+/* 🟡 Get requests for a specific student */
+exports . getMesscutRequestsByStudent = async (req, res) => {
+  try {
+    const { admissionNo } = req.query;
+    if (!admissionNo)
+      return res.status(400).json({ success: false, message: "Admission number required." });
+
+    const data = await Messcut.find({ admissionNo }).sort({ createdAt: -1 });
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error("❌ Fetch Error:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch requests." });
+  }
+};
+
+/* 🔵 (Admin) Get all requests */
+exports. getAllMesscutRequests = async (req, res) => {
+  try {
+    const data = await Messcut.find().sort({ createdAt: -1 });
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+/* 🟠 Update status (Approve/Reject) */
+exports.updateMesscutStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, adminRemark, updatedBy } = req.body;
+
+    // ✅ Validate input
+    if (!status) {
+      return res.status(400).json({ success: false, message: "Status is required." });
+    }
+
+    // ✅ Ensure status is valid
+    const validStatuses = ["Pending", "ACCEPT", "REJECT"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status value." });
+    }
+
+    // ✅ Perform update
+    const updated = await Messcut.findByIdAndUpdate(
+      id,
+      {
+        status,
+        adminRemark: adminRemark || "",
+        updatedBy: updatedBy || "Admin",
+        statusUpdatedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "No Mess Cut request found with the provided ID.",
+      });
+    }
+
+    // ✅ Return success
+    res.status(200).json({
+      success: true,
+      message: `Status updated to '${status}' successfully.`,
+      data: updated,
+    });
+  } catch (err) {
+    console.error("❌ Error updating messcut status:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update messcut status. Please try again later.",
+    });
+  }
+};
+
