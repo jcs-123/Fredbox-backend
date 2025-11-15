@@ -104,7 +104,7 @@ exports.createMesscutRequest = async (req, res) => {
     console.error("❌ Create Messcut Error:", err);
     res.status(500).json({
       success: false,
-      message: "Server error while submitting request.",
+      // message: "Server error while submitting request.",
       error: err.message,
     });
   }

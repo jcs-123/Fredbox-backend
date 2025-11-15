@@ -51,6 +51,8 @@ router.put("/api/holiday/update/:id", holidayController.updateHoliday);
 
 router.get("/api/messcut/report", messcutreport.getMesscutReport);
 router.get("/api/messcut/student", messcutreport.getMesscutDetailsByStudent)
+router.get("/api/messcut/all-details", messcutreport.getAllMesscutDetails)
+
 
 module.exports = router;
 

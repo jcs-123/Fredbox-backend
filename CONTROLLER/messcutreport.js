@@ -120,3 +120,54 @@ exports.getMesscutDetailsByStudent = async (req, res) => {
     });
   }
 };
+exports.getAllMesscutDetails = async (req, res) => {
+  try {
+    // 🟢 Step 1: Fetch all messcut records
+    const messcuts = await Messcut.find({})
+      .sort({ createdAt: -1 }) // latest first
+      .lean();
+
+    if (!messcuts.length) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: "No messcut records found.",
+      });
+    }
+
+    // 🟢 Step 2: Fetch all users (only needed fields)
+    const users = await User.find({}, "admissionNumber branch sem").lean();
+
+    // 🟢 Step 3: Merge user details into messcut record
+    const fullData = messcuts.map((m) => {
+      const student = users.find(
+        (u) => u.admissionNumber === m.admissionNo
+      );
+
+      return {
+        name: m.name,
+        admissionNumber: m.admissionNo,
+        branch: student?.branch || "-",
+        sem: student?.sem || "-",
+        leavingDate: m.leavingDate,
+        returningDate: m.returningDate,
+        reason: m.reason,
+        status: m.status,
+        createdAt: m.createdAt,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: fullData.length,
+      data: fullData,
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching all messcut records:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching messcut data.",
+    });
+  }
+};
