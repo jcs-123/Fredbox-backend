@@ -9,6 +9,7 @@ const complaintController  = require('./CONTROLLER/complaintController');
 const apologycontroller  = require('./CONTROLLER/apologyController');
 const holidayController = require("./CONTROLLER/holidayController");
 const messcutreport = require("./CONTROLLER/messcutreport");
+const attendancereportcontroller = require("./CONTROLLER/attendancereportcontroller");
 
 
 // login
@@ -53,6 +54,10 @@ router.get("/api/messcut/report", messcutreport.getMesscutReport);
 router.get("/api/messcut/student", messcutreport.getMesscutDetailsByStudent)
 router.get("/api/messcut/all-details", messcutreport.getAllMesscutDetails)
 
+//attendancereportmodel
+router.post("/attendance/save", attendancereportcontroller.saveAttendance);
+router.get("/attendance", attendancereportcontroller.getAttendanceByDate);
+router.get("/attendance/absentees", attendancereportcontroller.getAbsenteesByDate);
 
 module.exports = router;
 
