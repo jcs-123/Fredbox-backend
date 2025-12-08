@@ -11,7 +11,6 @@ const holidayController = require("./CONTROLLER/holidayController");
 const messcutreport = require("./CONTROLLER/messcutreport");
 const attendancereportcontroller = require("./CONTROLLER/attendancereportcontroller");
 
-
 // login
 router.post("/register", usercontroller.addUser);
 router.post("/login", usercontroller.loginUser);
@@ -20,6 +19,11 @@ router.put('/update-password', usercontroller.updatePassword);
 router.post("/send-otp", otpcontroller.sendOtp);
 router.post("/verify-otp", otpcontroller.verifyOtp);
 router.post("/reset-password", otpcontroller.resetPassword);
+router.get("/sem-list",usercontroller. getSemesterList);
+router.get("/by-sem", usercontroller.getStudentsBySem);
+router.get("/all",usercontroller. getAllStudents);
+router.get("/count", usercontroller.getStudentAndRoomCount);
+
 // for apology
 router.get("/rooms", usercontroller.getAllRooms);
 router.get("/studentsByRoom", usercontroller.getStudentsByRoom);
@@ -27,15 +31,19 @@ router.get("/studentsByRoom", usercontroller.getStudentsByRoom);
 
 // messcutform
 router.post("/adddetail", messcutcontroller.createMesscutRequest);                // student submit
-router.get("/student", messcutcontroller.getMesscutRequestsByStudent);   // get own requests
-router.get("/all",messcutcontroller. getAllMesscutRequests);             // admin view all
-router.put("/status/:id", messcutcontroller.updateMesscutStatus); 
+router.get("/messcut/student", messcutcontroller.getMesscutRequestsByStudent);   // get own requests
+router.get("/messcut/all",messcutcontroller. getAllMesscutRequests);             // admin view all
+router.put("/messcut/status/:id", messcutcontroller.updateMesscutStatus); 
+router.get("/messcut/count", messcutcontroller.getMesscutCount);
+router.get("/messcut/clear/count", messcutcontroller.getMesscutCounts);
+
 
 // complainnt form
 router.post("/add", complaintController.createComplaint); // Student submits complaint
 router.get("/api/complaints/student", complaintController.getComplaintsByStudent); // Student view own
 router.get("/allcomplaint/all", complaintController.getAllComplaints); // Admin view all
 router.put("/api/complaint/update/:id", complaintController.updateComplaint); // Admin updates
+router.get("/allcomplaint/count", complaintController.getComplaintPendingCount);
 
 
 // apologyrequest
@@ -43,6 +51,7 @@ router.post("/apology/add", apologycontroller.addApologyRequest);
 router.get("/api/apology/all", apologycontroller.getAllApologyRequests);
 router.get("/by-student",apologycontroller. getApologyByStudent);
 router.put("/api/apology/update/:id", apologycontroller.updateApologyStatus);
+router.get("/count/pending", apologycontroller.getPendingApologyCount);
 // Holiday select
 router.post("/api/holiday/add", holidayController.addHoliday);
 router.get("/api/holiday/all", holidayController.getAllHolidays);
@@ -53,6 +62,13 @@ router.put("/api/holiday/update/:id", holidayController.updateHoliday);
 router.get("/api/messcut/report", messcutreport.getMesscutReport);
 router.get("/api/messcut/student", messcutreport.getMesscutDetailsByStudent)
 router.get("/api/messcut/all-details", messcutreport.getAllMesscutDetails)
+router.get("/api/messcut/by-date", messcutreport.getMesscutByDate);
+router.get("/api/messcut/by-date", messcutreport.getMesscutByDate);
+router.get(
+  "/api/messcut/by-datereport",
+  messcutreport.getDateWiseMesscutReport
+);
+router.get("/api/messcut/month-wise", messcutreport.getNameWiseMonthReport);
 
 //attendancereportmodel
 router.post("/attendance/save", attendancereportcontroller.saveAttendance);

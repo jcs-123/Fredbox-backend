@@ -297,3 +297,109 @@ exports.getStudentsByRoom = async (req, res) => {
 };
 
 
+exports.getSemesterList = async (req, res) => {
+  try {
+    const sems = await User.distinct("sem");
+
+    res.status(200).json({
+      success: true,
+      count: sems.length,
+      data: sems.sort(), // sorted Sem1..Sem8
+    });
+  } catch (error) {
+    console.error("❌ Error fetching semester list:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching semesters",
+    });
+  }
+};
+
+
+/* ===========================================================
+   2️⃣  GET STUDENTS BY SEMESTER
+   API: /api/users/by-sem?sem=Sem1
+   =========================================================== */
+
+exports.getStudentsBySem = async (req, res) => {
+  try {
+    const { sem } = req.query;
+
+    if (!sem) {
+      return res.status(400).json({
+        success: false,
+        message: "Semester is required",
+      });
+    }
+
+    const students = await User.find(
+      { sem },
+      "name admissionNumber branch sem roomNo"
+    ).sort({ name: 1 });  // sorted alphabetically
+
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching students by semester:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+/* ===========================================================
+   3️⃣  GET ALL STUDENTS (OPTIONAL)
+   =========================================================== */
+
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find(
+      {},
+      "name admissionNumber branch sem roomNo"
+    ).sort({ sem: 1, name: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students,
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching all students:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching student list",
+    });
+  }
+};
+
+exports.getStudentAndRoomCount = async (req, res) => {
+  try {
+    // Total students
+    const totalStudents = await User.countDocuments({ Role: "Student" });
+
+    // Total occupied rooms (students who have roomNo)
+    const occupiedRooms = await User.countDocuments({
+      Role: "Student",
+      roomNo: { $exists: true, $ne: "" }
+    });
+
+    res.status(200).json({
+      success: true,
+      totalStudents,
+      occupiedRooms
+    });
+
+  } catch (err) {
+    console.error("Count API Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};

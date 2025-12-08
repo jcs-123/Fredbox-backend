@@ -187,3 +187,75 @@ exports.updateMesscutStatus = async (req, res) => {
   }
 };
 
+
+
+exports.getMesscutCount = async (req, res) => {
+  try {
+    const total = await Messcut.countDocuments({});
+    const pending = await Messcut.countDocuments({ status: "Pending" });
+    const accepted = await Messcut.countDocuments({ status: "ACCEPT" });
+    const rejected = await Messcut.countDocuments({ status: "REJECT" });
+
+    return res.status(200).json({
+      success: true,
+      total,
+      pending,
+      accepted,
+      rejected,
+    });
+  } catch (err) {
+    console.error("❌ Messcut Count Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
+exports.getMesscutCounts = async (req, res) => {
+  try {
+    // ✅ Get India Date Properly (YYYY-MM-DD)
+    const indiaDate = new Date().toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+    // Convert DD/MM/YYYY → YYYY-MM-DD
+    const [dd, mm, yyyy] = indiaDate.split("/");
+    const today = `${yyyy}-${mm}-${dd}`;
+
+    // ===================================
+    // COUNT MESSCUTS
+    // ===================================
+
+    const pending = await Messcut.countDocuments({ status: "Pending" });
+
+    const leavingToday = await Messcut.countDocuments({
+      leavingDate: today
+    });
+
+    const returningToday = await Messcut.countDocuments({
+      returningDate: today
+    });
+
+    return res.status(200).json({
+      success: true,
+      today,
+      pending,
+      leavingToday,
+      returningToday,
+    });
+
+  } catch (err) {
+    console.error("❌ Messcut Count Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+

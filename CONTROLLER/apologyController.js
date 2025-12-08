@@ -86,3 +86,17 @@ exports. updateApologyStatus = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+exports.getPendingApologyCount = async (req, res) => {
+  try {
+    const pending = await ApologyRequest.countDocuments({ status: "Pending" });
+
+    return res.status(200).json({
+      success: true,
+      pending,
+    });
+
+  } catch (err) {
+    console.error("❌ Apology Pending Count Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

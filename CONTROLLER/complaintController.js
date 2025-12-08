@@ -115,4 +115,20 @@ exports.updateComplaint = async (req, res) => {
       .json({ success: false, message: "Server error", error: err.message });
   }
 };
+// controllers/complaintController.js
+
+exports.getComplaintPendingCount = async (req, res) => {
+  try {
+    const pending = await Complaint.countDocuments({ status: "Pending" });
+
+    return res.status(200).json({
+      success: true,
+      pending
+    });
+
+  } catch (err) {
+    console.error("❌ Complaint Pending Count Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
