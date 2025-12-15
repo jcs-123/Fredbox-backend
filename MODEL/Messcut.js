@@ -18,7 +18,11 @@ const messcutSchema = new mongoose.Schema(
       enum: ["Pending", "ACCEPT", "REJECT"],
       default: "Pending",
     },
-
+ parentStatus: {
+      type: String,
+      enum: ["Pending", "APPROVE", "REJECT"],
+      default: "Pending",
+    },
    period: {
       type: String,
       trim: true,
