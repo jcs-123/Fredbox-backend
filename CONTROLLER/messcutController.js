@@ -1,5 +1,7 @@
-const Messcut = require('../MODEL/Messcut');
+const mongoose = require("mongoose");
 
+
+const Messcut = require('../MODEL/Messcut');
 /* 🟢 Create a new request */
 
 const dayjs = require("dayjs");
@@ -254,6 +256,67 @@ exports.getMesscutCounts = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server Error",
+    });
+  }
+};
+exports.updateParentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { parentStatus } = req.body;
+
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request ID",
+      });
+    }
+
+    // ✅ Validate parentStatus
+    if (!["APPROVE", "REJECT"].includes(parentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid parent status value",
+      });
+    }
+
+    // ✅ Find messcut request
+    const request = await Messcut.findById(id);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Messcut request not found",
+      });
+    }
+
+    // 🔒 Parent can act only once
+    if (request.parentStatus !== "Pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Parent has already responded",
+      });
+    }
+
+    // ✅ Update ONLY parent status
+    request.parentStatus = parentStatus;
+    request.statusUpdatedAt = new Date();
+
+    await request.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        parentStatus === "APPROVE"
+          ? "Parent approved the request"
+          : "Parent rejected the request",
+      data: request,
+    });
+  } catch (error) {
+    console.error("❌ Parent Status Update Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };

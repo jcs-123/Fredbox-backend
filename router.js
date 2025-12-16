@@ -11,6 +11,7 @@ const holidayController = require("./CONTROLLER/holidayController");
 const messcutreport = require("./CONTROLLER/messcutreport");
 const attendancereportcontroller = require("./CONTROLLER/attendancereportcontroller");
 const parentlogin = require("./CONTROLLER/parentAuthController");
+const feeDueController = require("./CONTROLLER/feeDueController");
 
 // login
 router.post("/register", usercontroller.addUser);
@@ -37,7 +38,7 @@ router.get("/messcut/all",messcutcontroller. getAllMesscutRequests);            
 router.put("/messcut/status/:id", messcutcontroller.updateMesscutStatus); 
 router.get("/messcut/count", messcutcontroller.getMesscutCount);
 router.get("/messcut/clear/count", messcutcontroller.getMesscutCounts);
-
+router.put("/parent-status/:id",messcutcontroller. updateParentStatus);
 
 // complainnt form
 router.post("/add", complaintController.createComplaint); // Student submits complaint
@@ -53,6 +54,11 @@ router.get("/api/apology/all", apologycontroller.getAllApologyRequests);
 router.get("/by-student",apologycontroller. getApologyByStudent);
 router.put("/api/apology/update/:id", apologycontroller.updateApologyStatus);
 router.get("/count/pending", apologycontroller.getPendingApologyCount);
+router.get(
+  "/by-student/apologyadmison",
+  apologycontroller.getApologyByAdmissionNo
+);
+
 // Holiday select
 router.post("/api/holiday/add", holidayController.addHoliday);
 router.get("/api/holiday/all", holidayController.getAllHolidays);
@@ -75,8 +81,19 @@ router.get("/api/messcut/month-wise", messcutreport.getNameWiseMonthReport);
 router.post("/attendance/save", attendancereportcontroller.saveAttendance);
 router.get("/attendance", attendancereportcontroller.getAttendanceByDate);
 router.get("/attendance/absentees", attendancereportcontroller.getAbsenteesByDate);
+// routes/attendanceRoutes.js
+router.get("/attendance/parent/today", attendancereportcontroller.getTodayAttendanceForParent);
+
 // parent login
 router.post("/api/parent/login",parentlogin. loginParent);
 router.post("/api/parent/change-password", parentlogin.changeParentPassword);
+
+
+
+// fee duee
+router.get("/fees/get", feeDueController.getAllFeeDetails);
+router.get("/fees/get/:admissionNumber", feeDueController.getFeeByAdmissionNumber);
+router.post("/fees/bulk", feeDueController.addBulkFeeDue);
+router.delete("/fees/bulk-delete", feeDueController.deleteBulkFeeDue);
 module.exports = router;
 

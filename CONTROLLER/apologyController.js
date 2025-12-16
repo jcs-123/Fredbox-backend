@@ -100,3 +100,29 @@ exports.getPendingApologyCount = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+exports.getApologyByAdmissionNo = async (req, res) => {
+  try {
+    const { admissionNo } = req.query;
+
+    if (!admissionNo) {
+      return res.status(400).json({
+        success: false,
+        message: "Admission number required",
+      });
+    }
+
+    const data = await ApologyRequest.find({ admissionNo })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching apology by admission:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

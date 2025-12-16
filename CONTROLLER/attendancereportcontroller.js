@@ -108,3 +108,44 @@ exports.getAbsenteesByDate = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+exports.getTodayAttendanceForParent = async (req, res) => {
+  try {
+    const { admissionNumber } = req.query;
+
+    if (!admissionNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Admission number required",
+      });
+    }
+
+    // 📅 Today date (YYYY-MM-DD)
+    const today = new Date().toISOString().split("T")[0];
+
+    const attendance = await Attendance.findOne({
+      admissionNumber,
+      date: today,
+    });
+
+    if (!attendance) {
+      return res.json({
+        success: true,
+        absent: false,
+        message: "No attendance marked today",
+      });
+    }
+
+    return res.json({
+      success: true,
+      absent: attendance.attendance === false,
+      data: attendance,
+    });
+  } catch (error) {
+    console.error("❌ Parent Attendance Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
