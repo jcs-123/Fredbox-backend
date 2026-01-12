@@ -149,3 +149,73 @@ exports.getTodayAttendanceForParent = async (req, res) => {
     });
   }
 };
+
+exports.getMonthlyAttendance = async (req, res) => {
+  try {
+    const { month } = req.query; // YYYY-MM
+
+    if (!month) {
+      return res.status(400).json({
+        success: false,
+        message: "Month is required (YYYY-MM)",
+      });
+    }
+
+    const [year, mon] = month.split("-");
+    const daysInMonth = new Date(year, mon, 0).getDate();
+
+    // 1️⃣ All students
+    const students = await User.find({}, "name sem roomNo admissionNumber");
+
+    // 2️⃣ Attendance records for month
+    const records = await Attendance.find({
+      date: {
+        $gte: `${month}-01`,
+        $lte: `${month}-${daysInMonth}`,
+      },
+    });
+
+    // 3️⃣ Build report
+    const report = students.map((std) => {
+      const daily = {};
+      let present = 0;
+      let absent = 0;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const day = `${month}-${String(d).padStart(2, "0")}`;
+        const rec = records.find(
+          (r) =>
+            r.admissionNumber === std.admissionNumber &&
+            r.date === day
+        );
+
+        if (rec && rec.attendance === true) {
+          daily[day] = "P";
+          present++;
+        } else {
+          daily[day] = "A";
+          absent++;
+        }
+      }
+
+      return {
+        admissionNumber: std.admissionNumber,
+        name: std.name,
+        semester: std.sem,
+        roomNo: std.roomNo,
+        daily,
+        present,
+        absent,
+      };
+    });
+
+    res.json({
+      success: true,
+      daysInMonth,
+      data: report,
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

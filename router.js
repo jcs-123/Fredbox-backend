@@ -84,6 +84,9 @@ router.get("/attendance/absentees", attendancereportcontroller.getAbsenteesByDat
 // routes/attendanceRoutes.js
 router.get("/attendance/parent/today", attendancereportcontroller.getTodayAttendanceForParent);
 
+// ✅ MONTHLY FULL REPORT
+router.get("/attendance/monthly", attendancereportcontroller.getMonthlyAttendance);
+
 // parent login
 router.post("/api/parent/login",parentlogin. loginParent);
 router.post("/api/parent/change-password", parentlogin.changeParentPassword);
