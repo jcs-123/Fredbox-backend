@@ -403,3 +403,40 @@ exports.getStudentAndRoomCount = async (req, res) => {
     });
   }
 };
+
+
+
+exports.getAllStudentsMap = async (req, res) => {
+  try {
+    const students = await User.find(
+      { Role: { $ne: "Admin" } },   // only students
+      "admissionNumber sem year roomNo branch name"
+    );
+
+    const map = {};
+
+    students.forEach((s) => {
+      map[s.admissionNumber] = {
+        admissionNumber: s.admissionNumber,
+        name: s.name,
+        sem: s.sem,
+        year: s.year,
+        roomNo: s.roomNo || "",
+        branch: s.branch || "",
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: students.length,
+      data: map,   // 🔥 IMPORTANT
+    });
+
+  } catch (error) {
+    console.error("❌ getAllStudentsMap error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching students",
+    });
+  }
+};

@@ -25,6 +25,7 @@ router.get("/sem-list",usercontroller. getSemesterList);
 router.get("/by-sem", usercontroller.getStudentsBySem);
 router.get("/all",usercontroller. getAllStudents);
 router.get("/count", usercontroller.getStudentAndRoomCount);
+router.get("/users/map", usercontroller.getAllStudentsMap);
 
 // for apology
 router.get("/rooms", usercontroller.getAllRooms);
@@ -81,6 +82,12 @@ router.get("/api/messcut/month-wise", messcutreport.getNameWiseMonthReport);
 router.post("/attendance/save", attendancereportcontroller.saveAttendance);
 router.get("/attendance", attendancereportcontroller.getAttendanceByDate);
 router.get("/attendance/absentees", attendancereportcontroller.getAbsenteesByDate);
+router.post("/attendance/publish", attendancereportcontroller.publishAttendance);
+router.get(
+  "/attendance/parent/history",
+  attendancereportcontroller.getAbsentHistoryForParent
+);
+
 // routes/attendanceRoutes.js
 router.get("/attendance/parent/today", attendancereportcontroller.getTodayAttendanceForParent);
 

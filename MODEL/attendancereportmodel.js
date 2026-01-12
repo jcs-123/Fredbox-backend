@@ -17,6 +17,11 @@ const attendanceSchema = new mongoose.Schema({
 
   messcut: { type: Boolean, default: false },
   attendance: { type: Boolean, default: false },
+    published: {
+      type: String,
+      enum: ["none", "published"],
+      default: "none",
+    },
 }, { timestamps: true });
 
 const Attendance = mongoose.model("Attendance", attendanceSchema);

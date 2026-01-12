@@ -128,19 +128,36 @@ exports.getTodayAttendanceForParent = async (req, res) => {
       date: today,
     });
 
+    // ❌ No attendance record
     if (!attendance) {
       return res.json({
         success: true,
+        published: "none",
         absent: false,
         message: "No attendance marked today",
       });
     }
 
+    // 🔒 NOT PUBLISHED → HIDE FROM PARENT
+    if (attendance.published !== "published") {
+      return res.json({
+        success: true,
+        published: attendance.published || "none",
+        absent: false,
+        message: "Attendance not published",
+      });
+    }
+
+    // ✅ PUBLISHED → SHOW ONLY ABSENT STATUS
     return res.json({
       success: true,
-      absent: attendance.attendance === false,
-      data: attendance,
+      published: "published",
+      absent: attendance.attendance === false, // 👈 ONLY HERE
+      data: {
+        date: attendance.date,
+      },
     });
+
   } catch (error) {
     console.error("❌ Parent Attendance Error:", error);
     res.status(500).json({
@@ -149,3 +166,68 @@ exports.getTodayAttendanceForParent = async (req, res) => {
     });
   }
 };
+
+
+exports.publishAttendance = async (req, res) => {
+  try {
+    const { date } = req.body;
+
+    if (!date) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Date is required" });
+    }
+
+    await Attendance.updateMany(
+      { date },
+      { $set: { published: "published" } }
+    );
+
+    res.json({
+      success: true,
+      message: "Attendance published successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getAbsentHistoryForParent = async (req, res) => {
+  try {
+    const { admissionNumber } = req.query;
+
+    if (!admissionNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Admission number required",
+      });
+    }
+
+    // console.log("📤 Fetching absent history for:", admissionNumber);
+
+    const absentHistory = await Attendance.find({
+      admissionNumber,
+      attendance: false,          // ✅ ONLY ABSENT
+      published: "published",     // ✅ ONLY AFTER PUBLISH
+    })
+      .select({ _id: 0, date: 1 }) // ✅ DATE ONLY, REMOVE _id
+      .sort({ date: -1 })          // ✅ latest first (YYYY-MM-DD safe)
+
+    return res.json({
+      success: true,
+      count: absentHistory.length,
+      data: absentHistory.map(item => item.date), // ✅ ARRAY OF STRINGS
+    });
+
+  } catch (error) {
+    console.error("❌ Absent history error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
