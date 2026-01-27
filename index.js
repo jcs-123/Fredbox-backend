@@ -7,7 +7,7 @@ require('./connection');
 const SIM = express();
 SIM.use(cors());
 SIM.use(express.json());
-
+SIM.use("/uploads", express.static("uploads"));
 // ✅ Prefix all user routes with /user
 SIM.use('/', router);
 

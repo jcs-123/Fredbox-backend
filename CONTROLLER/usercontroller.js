@@ -1,4 +1,6 @@
 const User = require('../MODEL/usermodel');
+const fs = require("fs");
+const path = require("path");
 
 /* 🔹 Add (Register) New User */
 exports.addUser = async (req, res) => {
@@ -437,6 +439,205 @@ exports.getAllStudentsMap = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while fetching students",
+    });
+  }
+};
+
+
+
+// profiel section
+
+/* ================= GET ALL ================= */
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find().sort({ createdAt: -1 });
+    res.json({ success: true, data: students });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= GET ONE ================= */
+exports.getStudent = async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student)
+      return res.status(404).json({ success: false, message: "Student not found" });
+
+    res.json({ success: true, data: student });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= ADD STUDENT ================= */
+exports.addStudent = async (req, res) => {
+  try {
+    const exists = await User.findOne({
+      admissionNumber: req.body.admissionNumber,
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Admission number already exists",
+      });
+    }
+
+    const student = await User.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Student added successfully",
+      data: student,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+/* ================= GET ALL STUDENTS ================= */
+exports.getStudents = async (req, res) => {
+  try {
+    const students = await User.find().sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: students,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= GET STUDENT BY ID ================= */
+exports.getStudentById = async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: student,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= UPDATE STUDENT ================= */
+exports.updateStudent = async (req, res) => {
+  try {
+    const student = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Student updated successfully",
+      data: student,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ================= DELETE STUDENT ================= */
+exports.deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const student = await User.findByIdAndDelete(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Student deleted successfully",
+    });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting student",
+    });
+  }
+};
+
+/* ================= UPDATE PROFILE PHOTO ================= */
+exports.updateProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    const student = await User.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    /* ================= DELETE OLD PHOTO ================= */
+    if (student.profilePhoto) {
+      const oldPhotoPath = path.resolve(
+        "uploads",
+        "students",
+        "profile",
+        student.profilePhoto
+      );
+
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlink(oldPhotoPath, (err) => {
+          if (err) {
+            console.error("Old photo delete error:", err.message);
+          }
+        });
+      }
+    }
+
+    /* ================= SAVE NEW PHOTO ================= */
+    student.profilePhoto = req.file.filename;
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile photo updated successfully",
+      data: student,
+    });
+  } catch (err) {
+    console.error("Update profile photo error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating profile photo",
     });
   }
 };

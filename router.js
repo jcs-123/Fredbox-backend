@@ -12,7 +12,7 @@ const messcutreport = require("./CONTROLLER/messcutreport");
 const attendancereportcontroller = require("./CONTROLLER/attendancereportcontroller");
 const parentlogin = require("./CONTROLLER/parentAuthController");
 const feeDueController = require("./CONTROLLER/feeDueController");
-
+const uploadProfile = require("./middleware/profileUpload");
 // login
 router.post("/register", usercontroller.addUser);
 router.post("/login", usercontroller.loginUser);
@@ -105,5 +105,29 @@ router.get("/fees/get", feeDueController.getAllFeeDetails);
 router.get("/fees/get/:admissionNumber", feeDueController.getFeeByAdmissionNumber);
 router.post("/fees/bulk", feeDueController.addBulkFeeDue);
 router.delete("/fees/bulk-delete", feeDueController.deleteBulkFeeDue);
+
+/* ================= PROFILE PHOTO ================= */
+// PROFILE PHOTO
+router.put(
+  "/studentprofile/api/profile-photo/:id",
+  uploadProfile.single("photo"),
+  usercontroller.updateProfilePhoto
+);
+
+// GET ALL STUDENTS
+router.get("/studentprofile/api", usercontroller.getStudents);
+
+// GET SINGLE STUDENT
+router.get("/studentprofile/api/:id", usercontroller.getStudentById);
+
+// ADD STUDENT
+router.post("/studentprofile/api", usercontroller.addStudent);
+
+// UPDATE STUDENT
+router.put("/studentprofile/api/:id", usercontroller.updateStudent);
+
+// DELETE STUDENT
+router.delete("/studentprofile/api/:id", usercontroller.deleteStudent);
+
 module.exports = router;
 
