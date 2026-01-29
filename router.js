@@ -13,6 +13,8 @@ const attendancereportcontroller = require("./CONTROLLER/attendancereportcontrol
 const parentlogin = require("./CONTROLLER/parentAuthController");
 const feeDueController = require("./CONTROLLER/feeDueController");
 const uploadProfile = require("./middleware/profileUpload");
+const outingController = require("./CONTROLLER/outingController");
+const outingstudentController = require("./CONTROLLER/outingstudentController");
 // login
 router.post("/register", usercontroller.addUser);
 router.post("/login", usercontroller.loginUser);
@@ -128,6 +130,35 @@ router.put("/studentprofile/api/:id", usercontroller.updateStudent);
 
 // DELETE STUDENT
 router.delete("/studentprofile/api/:id", usercontroller.deleteStudent);
+
+
+
+//outgoingcontrolelr
+router.post("/admin/eligibility", outingController.setEligibilityBulk);
+router.get(
+  "/student/eligibility/:admissionNumber",
+  outingController.checkEligibility
+);
+router.get("/admin/outing/eligible", outingController.getEligibleStudents);
+
+
+
+
+
+// outingstudent
+router.post("/outing/request", outingstudentController.requestOuting);
+router.get("/outing/student/:admissionNumber", outingstudentController.getStudentOutings);
+router.get("/outing/count", outingstudentController.getMonthlyOutingCount);
+router.put("/outing/parent/:id", outingstudentController.parentDecision);
+router.put("/outing/admin/:id", outingstudentController.adminDecision);
+
+router.put("/outing/parent/:id", outingstudentController.parentDecision);
+router.get("/outing/admin/all", outingstudentController.getAllOutingRequests);
+router.put("/outing/admin/:id", outingstudentController.adminDecision);
+router.get("/outing/admin/report", outingstudentController.getMonthlyReport);
+router.get("/outing/admin/stats", outingstudentController.getOutingStats);
+router.get("/outing/admin/eligible", outingstudentController.getEligibleStudents);
+
 
 module.exports = router;
 
