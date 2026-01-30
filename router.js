@@ -132,6 +132,16 @@ router.put("/studentprofile/api/:id", usercontroller.updateStudent);
 router.delete("/studentprofile/api/:id", usercontroller.deleteStudent);
 
 
+// ================= BULK SEMESTER MANAGEMENT =================
+router.get(
+  "/students/bulk-sem",
+  usercontroller.getAllStudentsForBulk
+);
+
+router.post(
+  "/students/bulk-sem-update",
+  usercontroller.bulkChangeSemester
+);
 
 //outgoingcontrolelr
 router.post("/admin/eligibility", outingController.setEligibilityBulk);

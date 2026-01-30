@@ -641,3 +641,66 @@ exports.updateProfilePhoto = async (req, res) => {
     });
   }
 };
+// ================= GET ALL STUDENTS (FOR BULK SEM CHANGE) =================
+exports.getAllStudentsForBulk = async (req, res) => {
+  try {
+    const students = await User.find(
+      { Role: { $ne: "Admin" } },
+      "name admissionNumber branch sem year roomNo"
+    ).sort({ sem: 1, name: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students,
+    });
+  } catch (error) {
+    console.error("Bulk list error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+// ================= BULK SEMESTER UPDATE =================
+exports.bulkChangeSemester = async (req, res) => {
+  try {
+    let { fromSem, toSem } = req.body;
+
+    if (!fromSem || !toSem) {
+      return res.status(400).json({
+        success: false,
+        message: "From and To semester are required",
+      });
+    }
+
+    // 🔥 NORMALIZE VALUES
+    const normalize = (s) =>
+      s.startsWith("Semester") ? s : `Semester ${s.replace("Sem", "")}`;
+
+    const fromSemester = normalize(fromSem);
+    const toSemester = normalize(toSem);
+
+    const result = await User.updateMany(
+      {
+        sem: fromSemester,
+        Role: { $ne: "Admin" },
+      },
+      {
+        $set: { sem: toSemester },
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Students updated from ${fromSemester} to ${toSemester}`,
+      modified: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error("Bulk semester update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
