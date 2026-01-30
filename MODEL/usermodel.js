@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long'],
   },
+    parentPhoneNumber: {
+      type: String,
+      trim: true,
+    },
      profilePhoto: {
       type: String, // filename or URL
       default: null,
