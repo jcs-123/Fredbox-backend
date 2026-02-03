@@ -38,8 +38,6 @@ const ParentUserSchema = new mongoose.Schema(
 
     semester: {
       type: String,
-      required: true,
-      enum: ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"],
     },
 
     branch: {
