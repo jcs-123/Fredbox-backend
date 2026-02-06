@@ -1,5 +1,6 @@
 const User = require("../MODEL/usermodel.js");
 const Messcut = require("../MODEL/Messcut.js");
+const mongoose = require("mongoose");   // ✅ REQUIRED
 
 /**
  * 🧾 Generate Messcut Summary Report
@@ -145,6 +146,7 @@ exports.getAllMesscutDetails = async (req, res) => {
       );
 
       return {
+        _id: m._id,                 // ✅ VERY IMPORTANT
         name: m.name,
         admissionNumber: m.admissionNo,
         branch: student?.branch || "-",
@@ -155,6 +157,7 @@ exports.getAllMesscutDetails = async (req, res) => {
         status: m.status,
         createdAt: m.createdAt,
       };
+
     });
 
     res.status(200).json({
@@ -346,7 +349,7 @@ exports.getNameWiseMonthReport = async (req, res) => {
     // ⭐ 6. Loop all month days
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
 
-      const current = new Date(d);   
+      const current = new Date(d);
       current.setHours(0, 0, 0, 0);
 
       let meals = { B: true, L: true, T: true, D: true };
@@ -415,3 +418,54 @@ exports.getNameWiseMonthReport = async (req, res) => {
 };
 
 
+exports.updateMesscutDates = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { leavingDate, returningDate } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Messcut ID",
+      });
+    }
+
+    if (!leavingDate || !returningDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Leaving and Returning dates are required",
+      });
+    }
+
+    const messcut = await Messcut.findById(id);
+
+    if (!messcut) {
+      return res.status(404).json({
+        success: false,
+        message: "Messcut record not found",
+      });
+    }
+
+    // ✅ Update only dates
+    messcut.leavingDate = leavingDate;
+    messcut.returningDate = returningDate;
+
+    // ✅ Track admin update time
+    messcut.statusUpdatedAt = new Date();
+
+    await messcut.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Messcut dates updated successfully",
+      data: messcut,
+    });
+
+  } catch (error) {
+    console.error("❌ Messcut date update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating messcut dates",
+    });
+  }
+};
