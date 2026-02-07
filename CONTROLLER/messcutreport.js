@@ -123,20 +123,10 @@ exports.getMesscutDetailsByStudent = async (req, res) => {
 };
 exports.getAllMesscutDetails = async (req, res) => {
   try {
-    // 🟢 Step 1: Fetch all messcut records
     const messcuts = await Messcut.find({})
-      .sort({ createdAt: -1 }) // latest first
+      .sort({ createdAt: -1 })
       .lean();
 
-    if (!messcuts.length) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-        message: "No messcut records found.",
-      });
-    }
-
-    // 🟢 Step 2: Fetch all users (only needed fields)
     const users = await User.find({}, "admissionNumber branch sem").lean();
 
     const fullData = messcuts.map((m) => {
@@ -145,15 +135,16 @@ exports.getAllMesscutDetails = async (req, res) => {
       );
 
       return {
-        _id: m._id,
         name: m.name,
         admissionNumber: m.admissionNo, // ✅ FIXED
         branch: student?.branch || "-",
         sem: student?.sem || "-",
+        roomNo: m.roomNo,
         leavingDate: m.leavingDate,
         returningDate: m.returningDate,
         reason: m.reason,
         status: m.status,
+        parentStatus: m.parentStatus, // ✅ IMPORTANT
         createdAt: m.createdAt,
       };
     });
@@ -163,15 +154,11 @@ exports.getAllMesscutDetails = async (req, res) => {
       count: fullData.length,
       data: fullData,
     });
-
-  } catch (error) {
-    console.error("❌ Error fetching all messcut records:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while fetching messcut data.",
-    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 /**
  * 🟢 Get messcut list for a specific date
