@@ -135,10 +135,7 @@ exports.getAllMesscutDetails = async (req, res) => {
       );
 
       return {
-<<<<<<< HEAD
         _id: m._id.toString(),   // ⭐ IMPORTANT
-=======
->>>>>>> ba5419d74cda445b64892f6a8d999ed41f4ce722
         name: m.name,
         admissionNumber: m.admissionNo, // ✅ FIXED
         branch: student?.branch || "-",
@@ -148,10 +145,7 @@ exports.getAllMesscutDetails = async (req, res) => {
         returningDate: m.returningDate,
         reason: m.reason,
         status: m.status,
-<<<<<<< HEAD
-=======
         parentStatus: m.parentStatus, // ✅ IMPORTANT
->>>>>>> ba5419d74cda445b64892f6a8d999ed41f4ce722
         createdAt: m.createdAt,
       };
 
