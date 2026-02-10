@@ -147,7 +147,7 @@ exports.getAllMesscutDetails = async (req, res) => {
       );
 
       return {
-        _id: m._id,
+        _id: m._id.toString(),   // ⭐ IMPORTANT
         name: m.name,
         admissionNumber: m.admissionNo,
         branch: student?.branch || "-",
@@ -156,9 +156,10 @@ exports.getAllMesscutDetails = async (req, res) => {
         leavingDate: m.leavingDate,
         returningDate: m.returningDate,
         reason: m.reason,
-        status: m.status, // always ACCEPT
+        status: m.status,
         createdAt: m.createdAt,
       };
+
     });
 
     res.status(200).json({
