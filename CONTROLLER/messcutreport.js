@@ -123,23 +123,11 @@ exports.getMesscutDetailsByStudent = async (req, res) => {
 };
 exports.getAllMesscutDetails = async (req, res) => {
   try {
-    // ✅ ONLY ACCEPTED
-    const messcuts = await Messcut.find({ status: "ACCEPT" })
+    const messcuts = await Messcut.find({})
       .sort({ createdAt: -1 })
       .lean();
 
-    if (!messcuts.length) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-        message: "No accepted messcut records found.",
-      });
-    }
-
-    const users = await User.find(
-      {},
-      "admissionNumber branch sem roomNo"
-    ).lean();
+    const users = await User.find({}, "admissionNumber branch sem").lean();
 
     const fullData = messcuts.map((m) => {
       const student = users.find(
@@ -147,35 +135,38 @@ exports.getAllMesscutDetails = async (req, res) => {
       );
 
       return {
+<<<<<<< HEAD
         _id: m._id.toString(),   // ⭐ IMPORTANT
+=======
+>>>>>>> ba5419d74cda445b64892f6a8d999ed41f4ce722
         name: m.name,
-        admissionNumber: m.admissionNo,
+        admissionNumber: m.admissionNo, // ✅ FIXED
         branch: student?.branch || "-",
         sem: student?.sem || "-",
-        roomNo: student?.roomNo || "-",
+        roomNo: m.roomNo,
         leavingDate: m.leavingDate,
         returningDate: m.returningDate,
         reason: m.reason,
         status: m.status,
+<<<<<<< HEAD
+=======
+        parentStatus: m.parentStatus, // ✅ IMPORTANT
+>>>>>>> ba5419d74cda445b64892f6a8d999ed41f4ce722
         createdAt: m.createdAt,
       };
 
     });
 
-    res.status(200).json({
+    res.json({
       success: true,
       count: fullData.length,
       data: fullData,
     });
-
-  } catch (error) {
-    console.error("❌ Error fetching accepted messcut records:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while fetching messcut data",
-    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 /**
  * 🟢 Get messcut list for a specific date
